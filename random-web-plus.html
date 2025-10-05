@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Random Web+ (Ultimate)</title>
+  <style>
+    :root{
+      --glass: rgba(255,255,255,0.12);
+      --glass-2: rgba(255,255,255,0.08);
+      --accent: #7b61ff;
+      --accent-2: #42d392;
+      --text: #ffffff;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body {
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(135deg,#0f2027 0%,#203a43 50%,#2c5364 100%);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .card{
+      width:100%;
+      max-width:1100px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border-radius:16px;
+      padding:20px;
+      box-shadow: 0 10px 40px rgba(2,6,23,0.6);
+      backdrop-filter: blur(8px) saturate(120%);
+      border:1px solid rgba(255,255,255,0.05);
+    }
+    header{display:flex;align-items:center;gap:16px}
+    h1{margin:0;font-size:1.6rem}
+    p.lead{margin:6px 0 16px;color:rgba(255,255,255,0.9)}
+
+    .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    button.btn{
+      background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      color:var(--text);
+      border-radius:12px;padding:10px 14px;border:1px solid rgba(255,255,255,0.06);
+      cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:8px;
+      transition:transform .12s ease,box-shadow .12s ease;
+    }
+    button.btn:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.35)}
+    select, input[type="text"]{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:var(--glass);color:var(--text)}
+    .muted{opacity:0.85}
+
+    .panel{display:flex;gap:16px;margin-top:16px}
+    .left{flex:1;min-width:280px}
+    .right{width:360px;min-width:260px}
+
+    .favorites{background:var(--glass-2);padding:12px;border-radius:10px}
+    .favorites h3{margin:0 0 8px 0}
+    .fav-list{max-height:240px;overflow:auto}
+    .fav-list a{display:block;color:var(--text);text-decoration:none;padding:6px;border-radius:6px}
+    .fav-list a:hover{background:rgba(255,255,255,0.02)}
+
+    .meta{margin-top:10px;color:rgba(255,255,255,0.8);font-size:0.92rem}
+
+    .big-go{display:inline-flex;align-items:center;gap:10px;padding:14px 20px;font-size:1.05rem;border-radius:14px;background:linear-gradient(90deg,var(--accent),#47d2b7);box-shadow:0 8px 30px rgba(66,211,146,0.08);border:none}
+
+    .site-display{display:flex;gap:8px;margin-top:12px}
+    .site-display input{flex:1}
+
+    /* modal / games */
+    .modal{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:flex;align-items:center;justify-content:center;visibility:hidden;opacity:0;transition:opacity .2s ease,visibility .2s;z-index:60}
+    .modal.open{visibility:visible;opacity:1}
+    .modal-card{width:90%;max-width:900px;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.02));padding:18px;border-radius:12px;color:var(--text)}
+    .games-grid{display:flex;gap:12px}
+    .game-area{flex:1;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px}
+
+    /* tic tac toe */
+    .ttt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .ttt-cell{background:rgba(255,255,255,0.03);aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:pointer}
+
+    /* memory */
+    .mem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .card-item{background:rgba(255,255,255,0.03);aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer}
+
+    /* click speed */
+    .click-big{display:inline-flex;align-items:center;justify-content:center;font-size:1.4rem;padding:18px;border-radius:10px}
+
+    footer{margin-top:16px;color:rgba(255,255,255,0.6);font-size:0.85rem}
+
+    @media (max-width:880px){.panel{flex-direction:column}.right{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="card" role="application">
+    <header>
+      <div>
+        <h1>The Random Web+ (Ultimate)</h1>
+        <div class="muted">Bigger list • In-page minigames • Music toggle fixed • Favorites saved locally</div>
+      </div>
+    </header>
+
+    <p class="lead">Jump to random silly, beautiful, interactive, or gamey corners of the web. Pick a category or let chaos decide.</p>
+
+    <div class="controls">
+      <select id="category">
+        <option>All</option>
+        <option>Fun</option>
+        <option>Weird</option>
+        <option>Tools</option>
+        <option>Games</option>
+      </select>
+
+      <button class="btn" id="goRandom">🎲 Open Random (new tab)</button>
+      <button class="btn" id="goGame">🎮 Open Random Game</button>
+      <button class="btn" id="openModal">🕹️ Play In-Page Games</button>
+      <button class="btn" id="addFav">⭐ Add Current to Favorites</button>
+      <button class="btn" id="clearFav">🗑️ Clear Favorites</button>
+      <button class="btn" id="musicBtn">🎵 Music: Off</button>
+
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <input type="text" id="currentSite" placeholder="No site chosen yet" readonly />
+        <button class="btn" id="copyBtn">📋 Copy</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="left">
+        <div class="meta">Tip: Use the category selector to bias the randomness. Click the big "Open Random" button multiple times for variety.</div>
+
+        <div style="margin-top:18px">
+          <button class="big-go" id="bigGo">Take me somewhere now ✨</button>
+        </div>
+
+        <footer>Inspired by <a href="https://theuselessweb.com" target="_blank" style="color:inherit;text-decoration:underline">The Useless Web</a> • This single-file app opens new tabs for external sites.</footer>
+      </div>
+
+      <aside class="right">
+        <div class="favorites">
+          <h3>Your Favorites</h3>
+          <div class="fav-list" id="favList"><em>No favorites yet.</em></div>
+        </div>
+
+        <div style="margin-top:12px;color:rgba(255,255,255,0.8)">Show me: <span id="stats" style="font-weight:700">—</span></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- modal for games -->
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h2 style="margin:0">In-Page Minigames</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn" id="modalClose">Close</button>
+        </div>
+      </div>
+
+      <div class="games-grid">
+        <div class="game-area">
+          <h3>Tic‑Tac‑Toe</h3>
+          <div id="tttBoard" class="ttt-grid" aria-label="Tic tac toe board"></div>
+          <div style="margin-top:8px"><button class="btn" id="tttReset">Reset</button> <span id="tttStatus" style="margin-left:12px"></span></div>
+        </div>
+
+        <div class="game-area">
+          <h3>Click Speed Test</h3>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <label>Seconds: <input type="number" id="clickTime" value="10" style="width:80px" /></label>
+            <button class="btn" id="clickStart">Start</button>
+          </div>
+          <div style="margin-bottom:8px"><button id="clickTarget" class="click-big btn" disabled>Click me!</button></div>
+          <div>Clicks: <strong id="clickCount">0</strong> • Time left: <strong id="clickLeft">0.0</strong>s</div>
+        </div>
+
+        <div class="game-area">
+          <h3>Memory (match pairs)</h3>
+          <div id="memGrid" class="mem-grid"></div>
+          <div style="margin-top:8px"><button class="btn" id="memReset">New Game</button> <span id="memStatus" style="margin-left:12px"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* -------------------- site pools -------------------- */
+    const categories = {
+      Fun: [
+        "https://longdogechallenge.com/",
+        "https://puginarug.com/",
+        "https://heeeeeeeey.com/",
+        "https://thatsthefinger.com/",
+        "https://cant-not-tweet-this.com/",
+        "https://weirdorconfusing.com/",
+        "https://alwaysjudgeabookbyitscover.com/",
+        "https://clickingbad.com/",
+        "https://eelslap.com/",
+        "https://findtheinvisiblecow.com/",
+        "https://koalastothemax.com/",
+        "https://www.omfgdogs.com/",
+        "https://trypap.com/",
+        "https://cat-bounce.com/",
+        "https://ninjaflex.com/",
+        "https://beesbeesbees.com/",
+        "https://burymewithmymoney.com/",
+        "https://r33b.net/",
+        "https://randomcolour.com/",
+        "https://chrismckenzie.com/",
+        "https://corndog.io/",
+        "https://unicodesnowmanforyou.com/",
+        "https://www.rrrgggbbb.com/",
+        "https://www.staggeringbeauty.com/",
+        "https://you.regettingold.com/",
+        "https://thezen.zone/",
+        "https://doughnutkitten.com/",
+        "https://paint.toys/",
+        "https://isitchristmas.com/",
+        "https://ihasabucket.com/",
+        "https://chihuahuaspin.com/",
+        "https://endless.horse/",
+        "https://maze.toys/",
+        "https://jacksonpollock.org/",
+        "https://neal.fun/",
+        "https://neal.fun/size-of-space/",
+        "https://neal.fun/deep-sea/",
+        "https://neal.fun/absurd-trolley-problems/",
+        "https://neal.fun/drawlogosfrommemory/",
+        "https://jacksonpollock.org/",
+        "https://www.nyan.cat/"
+      ],
+      Weird: [
+        "https://theuselessweb.site/",
+        "https://bouncingdvdlogo.com/",
+        "https://trypap.com/",
+        "https://partridgegetslucky.com/",
+        "https://breakglass.app/",
+        "https://r34y.com/",
+        "https://www.republiquedesmangues.fr/",
+        "https://burymewithmymoney.com/",
+        "https://endless.horse/",
+        "https://chrismckenzie.com/",
+        "https://doughnutkitten.com/",
+        "https://corndog.io/",
+        "https://eelslap.com/",
+        "https://thatsthefinger.com/",
+        "https://trypap.com/",
+        "https://ihasabucket.com/",
+        "https://beesbeesbees.com/",
+        "https://r33b.net/",
+        "https://you.regettingold.com/",
+        "https://heeeeeeeey.com/"
+      ],
+      Tools: [
+        "https://stellarium-web.org/",
+        "https://thisissand.com/",
+        "https://pointerpointer.com/",
+        "https://www.thispersondoesnotexist.com/",
+        "https://www.futureme.org/",
+        "https://www.internetlivestats.com/",
+        "https://www.window-swap.com/",
+        "https://mapcrunch.com/",
+        "https://www.radio.garden/",
+        "https://checkbox.toys/scale/",
+        "https://musclewiki.com/",
+        "https://asoftmurmur.com/",
+        "https://paperplanes.world/",
+        "https://drawing.garden/",
+        "https://mondrianandme.com/",
+        "https://hackertyper.net/",
+        "https://www.patience-is-a-virtue.org/",
+        "https://neal.fun/where-does-the-day-go/",
+        "https://neal.fun/size-of-space/",
+        "https://neal.fun/earth-reviews/",
+        "https://www.mapcrunch.com/",
+        "https://joshworth.com/dev/pixelspace/pixelspace_solarsystem.html",
+        "https://www.window-swap.com/"
+      ],
+      Games: [
+        "https://play2048.co/",
+        "https://littlealchemy2.com/",
+        "https://agar.io/",
+        "https://slither.io/",
+        "https://krunker.io/",
+        "https://diep.io/",
+        "https://cookieclicker2.net/",
+        "https://www.crazygames.com/",
+        "https://poki.com/",
+        "https://www.coolmathgames.com/",
+        "https://www.miniclip.com/",
+        "https://itch.io/",
+        "https://www.kongregate.com/",
+        "https://jstris.jezevec10.com/",
+        "https://tetris.com/play-tetris",
+        "https://www.play2048.co/",
+        "https://www.kingdomofloathing.com/",
+        "https://www.hacker.org/",
+        "https://www.skribbl.io/",
+        "https://cookieclicker.herokuapp.com/",
+        "https://www.crazygames.com/t/arcade-games",
+        "https://www.newgrounds.com/"
+      ]
+    };
+
+    // Build a unique "All" pool
+    const all = Array.from(new Set([].concat(...Object.values(categories))));
+
+    // UI refs
+    const catSelect = document.getElementById('category');
+    const goRandomBtn = document.getElementById('goRandom');
+    const bigGoBtn = document.getElementById('bigGo');
+    const goGameBtn = document.getElementById('goGame');
+    const openModalBtn = document.getElementById('openModal');
+    const addFavBtn = document.getElementById('addFav');
+    const clearFavBtn = document.getElementById('clearFav');
+
+    const currentSiteInput = document.getElementById('currentSite');
+    const copyBtn = document.getElementById('copyBtn');
+    const favListEl = document.getElementById('favList');
+    const statsEl = document.getElementById('stats');
+
+    let currentSite = null;
+    let favorites = JSON.parse(localStorage.getItem('rw_favs_v3')||'[]');
+
+    function randomFrom(arr){return arr[Math.floor(Math.random()*arr.length)];}
+    function updateStats(){
+      statsEl.textContent = `${all.length} total sites • Fun:${categories.Fun.length} Weird:${categories.Weird.length} Tools:${categories.Tools.length} Games:${categories.Games.length}`;
+    }
+
+    function setCurrent(url){
+      currentSite = url;
+      currentSiteInput.value = url;
+    }
+
+    function openUrl(url){
+      setCurrent(url);
+      window.open(url,'_blank');
+    }
+
+    goRandomBtn.addEventListener('click', ()=>{
+      const sel = catSelect.value;
+      const pool = sel==='All'?all:categories[sel];
+      const url = randomFrom(pool);
+      openUrl(url);
+    });
+
+    bigGoBtn.addEventListener('click', ()=>goRandomBtn.click());
+
+    goGameBtn.addEventListener('click', ()=>{
+      const url = randomFrom(categories.Games);
+      openUrl(url);
+    });
+
+    // favorites
+    function renderFavs(){
+      if(!favorites.length){favListEl.innerHTML='<em>No favorites yet.</em>';return}
+      favListEl.innerHTML = favorites.map(u=>`<a href="${u}" target="_blank">${u}</a>`).join('');
+    }
+
+    addFavBtn.addEventListener('click', ()=>{
+      if(!currentSite){alert('No current site to add — open a random site first.');return}
+      if(!favorites.includes(currentSite)){
+        favorites.push(currentSite);
+        localStorage.setItem('rw_favs_v3',JSON.stringify(favorites));
+        renderFavs();
+      }
+    });
+
+    clearFavBtn.addEventListener('click', ()=>{
+      if(confirm('Clear all favorites?')){favorites=[];localStorage.removeItem('rw_favs_v3');renderFavs()}
+    });
+
+    copyBtn.addEventListener('click', async ()=>{
+      if(!currentSite){alert('Nothing to copy — open a random site first.');return}
+      try{await navigator.clipboard.writeText(currentSite);copyBtn.textContent='✅ Copied';setTimeout(()=>copyBtn.textContent='📋 Copy',1200)}catch(e){alert('Copy failed — your browser may block clipboard access.');}
+    });
+
+    // initial render
+    renderFavs();updateStats();
+
+    /* -------------------- music (fixed toggle) -------------------- */
+    const musicBtn = document.getElementById('musicBtn');
+    // using Audio object so we can control reliably
+    const bgm = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_5a5fbc1f65.mp3');
+    bgm.loop = true; bgm.preload = 'auto'; bgm.volume = 0.22; bgm.crossOrigin = 'anonymous';
+
+    async function toggleMusic(){
+      if(bgm.paused){
+        // try to play; may be blocked until user gesture — our button is a user gesture
+        try{
+          await bgm.play();
+          musicBtn.textContent = '🎵 Music: On';
+        }catch(err){
+          // the play failed (rare if user clicked the button) — inform the user
+          alert('Playback blocked by browser. Try clicking anywhere on the page or press the Music button again.');
+        }
+      }else{
+        bgm.pause();
+        musicBtn.textContent = '🎵 Music: Off';
+      }
+    }
+
+    musicBtn.addEventListener('click', toggleMusic);
+    // also allow 'm' key to toggle
+    document.addEventListener('keydown', (e)=>{if(e.key.toLowerCase()==='m') toggleMusic();});
+
+    /* -------------------- modal + games -------------------- */
+    const modal = document.getElementById('modal');
+    const modalClose = document.getElementById('modalClose');
+    openModalBtn.addEventListener('click', ()=>{modal.classList.add('open')});
+    modalClose.addEventListener('click', ()=>{modal.classList.remove('open')});
+    modal.addEventListener('click', (e)=>{if(e.target===modal) modal.classList.remove('open')});
+
+    // ----- Tic Tac Toe -----
+    const tttBoardEl = document.getElementById('tttBoard');
+    const tttReset = document.getElementById('tttReset');
+    const tttStatus = document.getElementById('tttStatus');
+    let tttState = Array(9).fill('');
+    let tttTurn = 'X';
+
+    function checkWin(b){
+      const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+      for(const [a,b1,c] of wins){
+        if(b[a] && b[a]===b[b1] && b[a]===b[c]) return b[a];
+      }
+      if(b.every(Boolean)) return 'Draw';
+      return null;
+    }
+
+    function renderTTT(){
+      tttBoardEl.innerHTML = '';
+      for(let i=0;i<9;i++){
+        const cell = document.createElement('div');
+        cell.className = 'ttt-cell';
+        cell.textContent = tttState[i];
+        cell.addEventListener('click', ()=>{
+          if(tttState[i]) return;
+          tttState[i]=tttTurn;
+          tttTurn = tttTurn==='X'?'O':'X';
+          const res = checkWin(tttState);
+          if(res){
+            if(res==='Draw') tttStatus.textContent = 'Draw!';
+            else tttStatus.textContent = `${res} wins!`;
+          }else{
+            tttStatus.textContent = `Turn: ${tttTurn}`;
+          }
+          renderTTT();
+        });
+        tttBoardEl.appendChild(cell);
+      }
+    }
+
+    tttReset.addEventListener('click', ()=>{tttState = Array(9).fill('');tttTurn='X';tttStatus.textContent='Turn: X';renderTTT();});
+    tttStatus.textContent='Turn: X';renderTTT();
+
+    // ----- Click Speed -----
+    const clickStart = document.getElementById('clickStart');
+    const clickTarget = document.getElementById('clickTarget');
+    const clickTimeInput = document.getElementById('clickTime');
+    const clickCountEl = document.getElementById('clickCount');
+    const clickLeftEl = document.getElementById('clickLeft');
+    let clickCount = 0; let clickInterval = null; let clickEndTime = 0;
+
+    clickStart.addEventListener('click', ()=>{
+      const secs = Math.max(1, Math.floor(Number(clickTimeInput.value) || 10));
+      clickCount = 0; clickCountEl.textContent = clickCount;
+      clickTarget.disabled = false; clickTarget.textContent = 'Click me!';
+      clickLeftEl.textContent = secs.toFixed(1);
+      clickEndTime = Date.now() + secs*1000;
+      clickInterval && clearInterval(clickInterval);
+      clickInterval = setInterval(()=>{
+        const left = Math.max(0,(clickEndTime - Date.now())/1000);
+        clickLeftEl.textContent = left.toFixed(1);
+        if(left<=0){
+          clearInterval(clickInterval);clickTarget.disabled=true;clickTarget.textContent='Done';alert(`Time's up! You clicked ${clickCount} times.`);
+        }
+      },100);
+    });
+    clickTarget.addEventListener('click', ()=>{clickCount++;clickCountEl.textContent = clickCount;});
+
+    // ----- Memory game -----
+    const memGrid = document.getElementById('memGrid');
+    const memReset = document.getElementById('memReset');
+    const memStatus = document.getElementById('memStatus');
+    let memCards = []; let memFirst = null; let memLock = false; let memMatches = 0;
+
+    const emojiPool = ['🍎','🍌','🍒','🍇','🍉','🍓','🍑','🍍','🥝','🥥','🍋','🍐','🍊','🍈','🥭','🍏'];
+
+    function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a}
+
+    function startMem(){
+      const pairs = shuffle(emojiPool).slice(0,8);
+      memCards = shuffle([...pairs,...pairs]);
+      memGrid.innerHTML = '';
+      memFirst = null; memLock=false; memMatches=0; memStatus.textContent='Matches: 0';
+      memCards.forEach((emoji,i)=>{
+        const el = document.createElement('div');
+        el.className='card-item';el.dataset.index=i;el.textContent='';
+        el.addEventListener('click', ()=>{
+          if(memLock) return; if(el.classList.contains('revealed')) return;
+          el.textContent = memCards[i]; el.classList.add('revealed');
+          if(memFirst===null){memFirst = {idx:i,el};}
+          else{
+            if(memCards[memFirst.idx]===memCards[i]){memMatches++;memStatus.textContent=`Matches: ${memMatches}`;memFirst=null; if(memMatches===8)memStatus.textContent='You matched all pairs!';}
+            else{memLock=true;setTimeout(()=>{memFirst.el.textContent='';el.textContent='';memFirst.el.classList.remove('revealed');el.classList.remove('revealed');memFirst=null;memLock=false;},700)}
+          }
+        });
+        memGrid.appendChild(el);
+      });
+    }
+    memReset.addEventListener('click', startMem);
+    startMem();
+
+    /* -------------------- finish -------------------- */
+    // ensure category select reflects keys
+    (function populateCategories(){
+      // already in select
+    })();
+
+  </script>
+</body>
+</html>
+
